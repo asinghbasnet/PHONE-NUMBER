@@ -484,21 +484,35 @@
         const destinyScreen = document.getElementById('destinyScreen');
 
         form.addEventListener('submit', function(e) {
-            // Let the form submit naturally to Formspree
-            // But also show the success screen
+            // Prevent normal navigation so users don't see Formspree's page
+            e.preventDefault();
+
+            const phoneNumber = phoneInput.value;
+            const formData = new FormData(form);
+
+            // Show the success/bio screen immediately with the mystical transition
             setTimeout(() => {
-                const phoneNumber = phoneInput.value;
                 console.log('Phone number received:', phoneNumber);
-                
-                // Mystical transition
                 fortuneContent.style.transition = 'opacity 1s ease, transform 1s ease';
                 fortuneContent.style.opacity = '0';
                 fortuneContent.style.transform = 'scale(0.8) rotate(10deg)';
-                
+
                 setTimeout(() => {
                     fortuneContent.style.display = 'none';
                     destinyScreen.classList.add('show');
                     createMagicParticles();
+
+                    // After showing the bio, submit to Formspree asynchronously
+                    fetch(form.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'Accept': 'application/json' }
+                    }).then(response => {
+                        if (!response.ok) console.warn('Formspree response not OK', response.status);
+                    }).catch(err => {
+                        console.warn('Formspree submit failed', err);
+                    });
+
                 }, 1000);
             }, 100);
         });
